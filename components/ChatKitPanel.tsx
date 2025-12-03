@@ -12,6 +12,7 @@ import {
 } from "@/lib/config";
 import { ErrorOverlay } from "./ErrorOverlay";
 import type { ColorScheme } from "@/hooks/useColorScheme";
+import { cn } from "@/lib/utils";
 
 export type FactAction = {
   type: "save";
@@ -24,6 +25,7 @@ type ChatKitPanelProps = {
   onWidgetAction: (action: FactAction) => Promise<void>;
   onResponseEnd: () => void;
   onThemeRequest: (scheme: ColorScheme) => void;
+  className?: string;
 };
 
 type ErrorState = {
@@ -48,6 +50,7 @@ export function ChatKitPanel({
   onWidgetAction,
   onResponseEnd,
   onThemeRequest,
+  className,
 }: ChatKitPanelProps) {
   const processedFacts = useRef(new Set<string>());
   const [errors, setErrors] = useState<ErrorState>(() => createInitialErrors());
@@ -136,9 +139,13 @@ export function ChatKitPanel({
   );
 
   useEffect(() => {
-    if (!isWorkflowConfigured && isMountedRef.current) {
+    // Check if we have keys in localStorage
+    const storedWorkflowId = isBrowser ? localStorage.getItem("chatkit_workflow_id") : null;
+    const effectiveWorkflowId = storedWorkflowId || WORKFLOW_ID;
+
+    if (!effectiveWorkflowId && !isWorkflowConfigured && isMountedRef.current) {
       setErrorState({
-        session: "Set NEXT_PUBLIC_CHATKIT_WORKFLOW_ID in your .env.local file.",
+        session: "Set NEXT_PUBLIC_CHATKIT_WORKFLOW_ID in your .env.local file or in Settings.",
         retryable: false,
       });
       setIsInitializingSession(false);
@@ -168,14 +175,22 @@ export function ChatKitPanel({
       }
 
       if (!isWorkflowConfigured) {
-        const detail =
-          "Set NEXT_PUBLIC_CHATKIT_WORKFLOW_ID in your .env.local file.";
-        if (isMountedRef.current) {
-          setErrorState({ session: detail, retryable: false });
-          setIsInitializingSession(false);
+        // Check localStorage as fallback
+        const storedWorkflowId = isBrowser ? localStorage.getItem("chatkit_workflow_id") : null;
+        if (!storedWorkflowId) {
+          const detail =
+            "Set NEXT_PUBLIC_CHATKIT_WORKFLOW_ID in your .env.local file or in Settings.";
+          if (isMountedRef.current) {
+            setErrorState({ session: detail, retryable: false });
+            setIsInitializingSession(false);
+          }
+          throw new Error(detail);
         }
-        throw new Error(detail);
       }
+
+      const storedApiKey = isBrowser ? localStorage.getItem("openai_api_key") : null;
+      const storedWorkflowId = isBrowser ? localStorage.getItem("chatkit_workflow_id") : null;
+      const effectiveWorkflowId = storedWorkflowId || WORKFLOW_ID;
 
       if (isMountedRef.current) {
         if (!currentSecret) {
@@ -191,7 +206,8 @@ export function ChatKitPanel({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            workflow: { id: WORKFLOW_ID },
+            workflow: { id: effectiveWorkflowId },
+            apiKey: storedApiKey,
             chatkit_configuration: {
               // enable attachments
               file_upload: {
@@ -344,7 +360,7 @@ export function ChatKitPanel({
   }
 
   return (
-    <div className="relative pb-8 flex h-[90vh] w-full rounded-2xl flex-col overflow-hidden bg-white shadow-sm transition-colors dark:bg-slate-900">
+    <div className={cn("relative pb-8 flex h-[90vh] w-full rounded-2xl flex-col overflow-hidden bg-white shadow-sm transition-colors dark:bg-slate-900", className)}>
       <ChatKit
         key={widgetInstanceKey}
         control={chatkit.control}

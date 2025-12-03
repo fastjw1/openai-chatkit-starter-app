@@ -10,13 +10,20 @@
   },
   "dependencies": {
     "@openai/chatkit-react": ">=1.1.1 <2.0.0",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.555.0",
     "next": "^15.5.4",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.4.0"
   },
   "optionalDependencies": {
-    "lightningcss-linux-x64-gnu": "1.30.1",
-    "@tailwindcss/oxide-linux-x64-gnu": "4.1.11"
+    "@tailwindcss/oxide-linux-x64-gnu": "4.1.11",
+    "lightningcss-linux-x64-gnu": "1.30.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

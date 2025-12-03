@@ -6,6 +6,7 @@ interface CreateSessionRequestBody {
   workflow?: { id?: string | null } | null;
   scope?: { user_id?: string | null } | null;
   workflowId?: string | null;
+  apiKey?: string | null;
   chatkit_configuration?: {
     file_upload?: {
       enabled?: boolean;
@@ -23,11 +24,13 @@ export async function POST(request: Request): Promise<Response> {
   }
   let sessionCookie: string | null = null;
   try {
-    const openaiApiKey = process.env.OPENAI_API_KEY;
+    const parsedBody = await safeParseJson<CreateSessionRequestBody>(request);
+    const openaiApiKey = parsedBody?.apiKey || process.env.OPENAI_API_KEY;
+
     if (!openaiApiKey) {
       return new Response(
         JSON.stringify({
-          error: "Missing OPENAI_API_KEY environment variable",
+          error: "Missing OPENAI_API_KEY environment variable or apiKey in request body",
         }),
         {
           status: 500,
@@ -35,8 +38,6 @@ export async function POST(request: Request): Promise<Response> {
         }
       );
     }
-
-    const parsedBody = await safeParseJson<CreateSessionRequestBody>(request);
     const { userId, sessionCookie: resolvedSessionCookie } =
       await resolveUserId(request);
     sessionCookie = resolvedSessionCookie;
