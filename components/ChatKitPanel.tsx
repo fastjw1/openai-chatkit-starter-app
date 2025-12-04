@@ -366,7 +366,7 @@ export function ChatKitPanel({
         control={chatkit.control}
         className={
           blockingError || isInitializingSession
-            ? "pointer-events-none opacity-0"
+            ? "pointer-events-none opacity-50 blur-sm"
             : "block h-full w-full"
         }
       />
@@ -380,6 +380,13 @@ export function ChatKitPanel({
         onRetry={blockingError && errors.retryable ? handleResetChat : null}
         retryLabel="Restart chat"
       />
+      {/* Debug Info */}
+      <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-2 z-50 pointer-events-none">
+        Status: {isInitializingSession ? "Initializing" : "Ready"} |
+        Script: {scriptStatus} |
+        Error: {blockingError || "None"} |
+        Workflow: {WORKFLOW_ID ? "Configured" : "Missing"}
+      </div>
     </div>
   );
 }
